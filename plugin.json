@@ -1,0 +1,12 @@
+{
+  "ID": "69335BA5-E0B6-4ADB-814B-1849A0F7D129",
+  "ActionKeyword": "pear",
+  "Name": "Pear Desktop",
+  "Description": "Contrôle Pear Desktop (YouTube Music) with Flow Launcher",
+  "Author": "Justekal",
+  "Version": "1.2.0",
+  "Language": "python",
+  "Website": "https://github.com/pear-devs/pear-desktop",
+  "IcoPath": "Images\\app.png",
+  "ExecuteFileName": "main.py"
+}

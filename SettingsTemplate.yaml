@@ -1,0 +1,11 @@
+body:
+  - type: input
+    attributes:
+      name: host
+      label: Hôte de l'API Server
+      defaultValue: "127.0.0.1"
+  - type: input
+    attributes:
+      name: port
+      label: Port de l'API Server
+      defaultValue: "26538"
