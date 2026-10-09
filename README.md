@@ -2,6 +2,9 @@
 
 Control [Pear Desktop](https://github.com/pear-devs/pear-desktop) from [Flow Launcher](https://github.com/Flow-Launcher/Flow.Launcher).
 
+<img width="1238" height="599" alt="output_20261009_203243_368146_55937d57" src="https://github.com/user-attachments/assets/4bb74d86-2b7e-4d75-a0d9-d4d3f3f0aee7" />
+
+
 ## Prerequisites
 1. Pear Desktop: **Plugins > API Server** enabled (default port 26538).
 2. Flow Launcher with Python configured (Settings > Python) — no libraries to install.
