@@ -2,10 +2,10 @@ body:
   - type: input
     attributes:
       name: host
-      label: Hôte de l'API Server
+      label: Pear Desktop API Server Host
       defaultValue: "127.0.0.1"
   - type: input
     attributes:
       name: port
-      label: Port de l'API Server
+      label: Pear Desktop API Server Port
       defaultValue: "26538"

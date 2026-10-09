@@ -6,7 +6,7 @@
   "Author": "Justekal",
   "Version": "1.2.0",
   "Language": "python",
-  "Website": "https://github.com/pear-devs/pear-desktop",
+  "Website": "https://github.com/JusteKal/Flow.Launcher.Plugin.PearDesktop",
   "IcoPath": "Images\\app.png",
   "ExecuteFileName": "main.py"
 }

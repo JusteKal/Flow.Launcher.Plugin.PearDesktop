@@ -1,29 +1,30 @@
-# Pear Desktop pour Flow Launcher
+# Pear Desktop for Flow Launcher
 
-Contrôle [Pear Desktop](https://github.com/pear-devs/pear-desktop) depuis [Flow Launcher](https://github.com/Flow-Launcher/Flow.Launcher).
+Control [Pear Desktop](https://github.com/pear-devs/pear-desktop) from [Flow Launcher](https://github.com/Flow-Launcher/Flow.Launcher).
 
-## Prérequis
-1. Pear Desktop : **Plugins > API Server** activé (port par défaut 26538).
-2. Flow Launcher avec Python configuré (Paramètres > Python) — aucune librairie à installer.
+## Prerequisites
+1. Pear Desktop: **Plugins > API Server** enabled (default port 26538).
+2. Flow Launcher with Python configured (Settings > Python) — no libraries to install.
 
 ## Installation
-Copiez le dossier `Flow.Launcher.Plugin.PearDesktop` dans
-`%APPDATA%\FlowLauncher\Plugins\` puis redémarrez Flow Launcher.
+Copy the `Flow.Launcher.Plugin.PearDesktop` folder into
+`%APPDATA%%FLOWLAUNCHER%%PLUGINS%%` then restart Flow Launcher.
 
-## Première utilisation
-Tapez `pear auth` → Entrée, puis cliquez sur **Autoriser** dans la pop-up de Pear.
-(Le token est stocké dans `%APPDATA%\FlowLauncher\Settings\Plugins\PearDesktop\token.txt`.)
+## First Use
+Type `pear auth` → Enter, then click **Allow** in the Pear pop-up.
+The token is stored in `%APPDATA%%FLOWLAUNCHER%%SETTINGS%%Plugins%%PearDesktop%%token.txt`.
+(The token is stored in `%APPDATA%\FlowLauncher\Settings\Plugins\PearDesktop\token.txt`.)
+> Tip: In Flow Launcher > Plugins > Pear Desktop, set a *Search delay* (≈ 400 ms) to avoid triggering a search on every key press.
 
-## Commandes (mot-clé `pear`)
-| Saisie | Action |
+| Command | Action |
 |---|---|
-| `pear` | Morceau en cours (avec sa pochette) + toutes les commandes |
-| `pear play` / `pause` / `next` / `prev` | Lecture / pause / suivant / précédent |
-| `pear like` / `dislike` | J'aime / je n'aime pas |
-| `pear shuffle` / `repeat` / `mute` / `full` | Aléatoire / répétition / muet / plein écran |
-| `pear vol 40` | Volume à 40 % |
-| `pear seek 1:30` | Aller à 1:30 |
-| `pear +10` / `-10` | Avancer / reculer de 10 s |
-| `pear search <texte>` (ou `pear s <texte>`) | Recherche de morceaux. Entrée : lire maintenant ; Maj+Entrée : « Lire ensuite » / « Ajouter en fin de file » |
+| `pear` | Now Playing (with cover) + all commands |
+| `pear play` / `pause` / `next` / `prev` | Play / Pause / Next / Previous |
+| `pear like` / `dislike` | Like / Dislike |
+| `pear shuffle` / `repeat` / `mute` / `full` | Shuffle / Repeat / Mute / Fullscreen |
+| `pear vol 40` | Volume to 40%% |
+| `pear seek 1:30` | Go to 1:30 |
+| `pear +10` / `-10` | Forward / Backward 10 seconds |
+| `pear search <texte>` (or `pear s <texte>`) | Search songs. Enter: play now; Shift+Enter: "Play later" / "Add to end of queue"
 
-> Astuce : dans Flow Launcher > Plugins > Pear Desktop, réglez un *Search delay* (≈ 400 ms) pour ne pas lancer une recherche à chaque touche.
+> Tip: In Flow Launcher > Plugins > Pear Desktop, set a *Search delay* (≈ 400 ms) to avoid triggering a search on every key press.

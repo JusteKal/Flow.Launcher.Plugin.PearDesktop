@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-"""Flow Launcher plugin : contrôle Pear Desktop from this plugin « API Server ».
-No external dependance."""
+"""Flow Launcher plugin: controls Pear Desktop via this plugin's "API Server".
+No external dependencies."""
 import hashlib
 import json
 import os
@@ -16,6 +16,7 @@ ICON = "Images\\app.png"
 
 # ---------------------------------------------------------------- config
 def settings_dir():
+    """Return the base directory for plugin settings."""
     base = os.environ.get("APPDATA") or os.path.expanduser("~/.config")
     d = os.path.join(base, "FlowLauncher", "Settings", "Plugins", "PearDesktop")
     try:
@@ -29,6 +30,7 @@ TOKEN_FILE = os.path.join(settings_dir(), "token.txt")
 
 
 def load_token():
+    """Load the authentication token from file."""
     try:
         with open(TOKEN_FILE, encoding="utf-8") as f:
             return f.read().strip()
@@ -37,17 +39,22 @@ def load_token():
 
 
 def save_token(token):
+    """Save the authentication token to file."""
     with open(TOKEN_FILE, "w", encoding="utf-8") as f:
         f.write(token)
 
 
 class Pear:
+    """Client for Pear Desktop API."""
+
     def __init__(self, settings):
+        """Initialize the Pear client with provided settings."""
         s = settings or {}
         self.base = "http://%s:%s" % (s.get("host") or "127.0.0.1", s.get("port") or "26538")
         self.token = load_token()
 
     def _raw(self, method, path, body=None, auth=True, timeout=3):
+        """Internal helper for making raw API requests."""
         data = json.dumps(body).encode() if body is not None else None
         req = urllib.request.Request(self.base + path, data=data, method=method)
         req.add_header("Content-Type", "application/json")
@@ -58,14 +65,16 @@ class Pear:
             return json.loads(raw) if raw.strip() else {}
 
     def authenticate(self):
-        # Pear affiche une pop-up « autoriser » : on attend la réponse de l'utilisateur
+        """Authenticate with Pear Desktop."""
+        # Pear shows an "Allow" popup: wait for user response
         res = self._raw("POST", "/auth/" + APP_ID, auth=False, timeout=60)
         self.token = res.get("accessToken", "")
         if not self.token:
-            raise RuntimeError("Aucun token reçu")
+            raise RuntimeError("No token received")
         save_token(self.token)
 
     def call(self, method, path, body=None, timeout=3):
+        """Make an authenticated API call."""
         if not self.token:
             self.authenticate()
         try:
@@ -78,15 +87,15 @@ class Pear:
 
 
 
-# ---------------------------------------------------------------- pochette
+# ---------------------------------------------------------------- artwork
 COVER_DIR = os.path.join(settings_dir(), "covers")
 
 
 def get_cover(url):
-    """Télécharge la pochette (cache local) et renvoie son chemin, sinon l'icône par défaut."""
+    """Download and cache the album art, return its path; otherwise default icon."""
     if not url or not url.startswith("http"):
         return ICON
-    # miniature 60x60 par défaut -> version plus grande
+    # default 60x60 thumbnail -> larger version
     url = re.sub(r"=w\d+-h\d+.*$", "=w256-h256-l90-rj", url)
     try:
         os.makedirs(COVER_DIR, exist_ok=True)
@@ -94,7 +103,7 @@ def get_cover(url):
         if not os.path.exists(path):
             with urllib.request.urlopen(url, timeout=3) as r, open(path, "wb") as f:
                 f.write(r.read())
-            # on ne garde que les 30 pochettes les plus récentes
+            # keep only the 30 most recent covers
             files = sorted((os.path.join(COVER_DIR, n) for n in os.listdir(COVER_DIR)),
                            key=os.path.getmtime, reverse=True)
             for old in files[30:]:
@@ -107,26 +116,27 @@ def get_cover(url):
         return ICON
 
 
-# ---------------------------------------------------------------- commandes
-# (mots-clés, titre, sous-titre, méthode, chemin, corps)
+# ---------------------------------------------------------------- commands
+# (keywords, title, subtitle, method, path, body)
 COMMANDS = [
-    ("play pause toggle", "Lecture / Pause", "Basculer la lecture", "POST", "/api/v1/toggle-play", None),
-    ("play lecture", "Lecture", "Reprendre la lecture", "POST", "/api/v1/play", None),
-    ("pause", "Pause", "Mettre en pause", "POST", "/api/v1/pause", None),
-    ("next suivant skip", "Piste suivante", "Passer à la piste suivante", "POST", "/api/v1/next", None),
-    ("previous precedent prev back", "Piste précédente", "Revenir à la piste précédente", "POST", "/api/v1/previous", None),
-    ("like aimer", "J'aime", "Aimer / retirer le j'aime", "POST", "/api/v1/like", None),
-    ("dislike", "Je n'aime pas", "Marquer comme non apprécié", "POST", "/api/v1/dislike", None),
-    ("shuffle aleatoire", "Aléatoire", "Activer/désactiver la lecture aléatoire", "POST", "/api/v1/shuffle", None),
-    ("repeat repetition boucle", "Répéter", "Changer le mode de répétition", "POST", "/api/v1/switch-repeat", {"iteration": 1}),
-    ("mute muet", "Muet", "Activer/désactiver le son", "POST", "/api/v1/toggle-mute", None),
-    ("fullscreen plein ecran", "Plein écran", "Basculer le plein écran", "POST", "/api/v1/fullscreen", None),
-    ("forward avance +10", "Avancer de 10 s", "Avance rapide", "POST", "/api/v1/go-forward", {"seconds": 10}),
-    ("rewind recule -10", "Reculer de 10 s", "Retour rapide", "POST", "/api/v1/go-back", {"seconds": 10}),
+    ("play pause toggle", "Play / Pause", "Toggle playback", "POST", "/api/v1/toggle-play", None),
+    ("play lecture", "Play", "Resume playback", "POST", "/api/v1/play", None),
+    ("pause", "Pause", "Pause playback", "POST", "/api/v1/pause", None),
+    ("next suivant skip", "Next track", "Skip to next track", "POST", "/api/v1/next", None),
+    ("previous precedent prev back", "Previous track", "Go to previous track", "POST", "/api/v1/previous", None),
+    ("like aimer", "Like", "Toggle like", "POST", "/api/v1/like", None),
+    ("dislike", "Dislike", "Mark as dislike", "POST", "/api/v1/dislike", None),
+    ("shuffle aleatoire", "Shuffle", "Toggle shuffle mode", "POST", "/api/v1/shuffle", None),
+    ("repeat repetition boucle", "Repeat", "Toggle repeat mode", "POST", "/api/v1/switch-repeat", {"iteration": 1}),
+    ("mute muet", "Mute", "Toggle mute", "POST", "/api/v1/toggle-mute", None),
+    ("fullscreen plein ecran", "Fullscreen", "Toggle fullscreen", "POST", "/api/v1/fullscreen", None),
+    ("forward avance +10", "Fast forward 10s", "Quick forward", "POST", "/api/v1/go-forward", {"seconds": 10}),
+    ("rewind recule -10", "Rewind 10s", "Quick backward", "POST", "/api/v1/go-back", {"seconds": 10}),
 ]
 
 
 def action(title, sub, method, path, body=None, **extra):
+    """Create an action entry."""
     r = {
         "Title": title,
         "SubTitle": sub,
@@ -138,11 +148,13 @@ def action(title, sub, method, path, body=None, **extra):
 
 
 def fmt_time(sec):
+    """Format seconds as MM:SS."""
     sec = int(sec or 0)
     return "%d:%02d" % (sec // 60, sec % 60)
 
 
 def parse_time(txt):
+    """Parse time string into seconds."""
     try:
         if ":" in txt:
             m, s = txt.split(":", 1)
@@ -153,6 +165,7 @@ def parse_time(txt):
 
 
 def now_playing(pear):
+    """Get now-playing song info and create action."""
     song = pear.call("GET", "/api/v1/song")
     if not song or not song.get("title"):
         return None
@@ -163,14 +176,14 @@ def now_playing(pear):
     pos = " · %s / %s" % (fmt_time(elapsed), fmt_time(dur)) if dur else ""
     return action(
         "%s %s" % (state, song.get("title")),
-        "%s%s — Entrée : lecture/pause" % (song.get("artist", ""), pos),
+        "%s%s — Enter: play/pause" % (song.get("artist", ""), pos),
         "POST", "/api/v1/toggle-play",
         IcoPath=get_cover(song.get("imageSrc")),
     )
 
 
 
-# ---------------------------------------------------------------- recherche
+# ----------------------------------------------------------------- search
 def _find_items(node, out):
     if isinstance(node, dict):
         r = node.get("musicResponsiveListItemRenderer")
@@ -209,7 +222,7 @@ def _col_text(col):
 
 
 def _generic(node, out):
-    """Repli : tout dict possédant videoId + title (chaînes)."""
+    """Fallback: any dict with videoId + title (channels)."""
     if isinstance(node, dict):
         if isinstance(node.get("videoId"), str) and isinstance(node.get("title"), str):
             out.append({"id": node["videoId"], "title": node["title"],
@@ -222,6 +235,7 @@ def _generic(node, out):
 
 
 def parse_search(data):
+    """Parse search results into list of items."""
     items, res, seen = [], [], set()
     _find_items(data, items)
     for it in items:
@@ -243,12 +257,13 @@ def parse_search(data):
 
 
 def search_results(pear, text):
+    """Search and return results for Flow Launcher."""
     data = pear.call("POST", "/api/v1/search", {"query": text}, timeout=10)
     out = []
     for r in parse_search(data):
         out.append({
             "Title": r["title"],
-            "SubTitle": (r["sub"] + " — " if r["sub"] else "") + "Entrée : lire · Maj+Entrée : file d'attente",
+            "SubTitle": (r["sub"] + " — " if r["sub"] else "") + "Enter: play · Shift+Enter: queue",
             "IcoPath": ICON,
             "JsonRPCAction": {"method": "play_now", "parameters": [r["id"]]},
             "ContextData": [r["id"], r["title"]],
@@ -256,39 +271,40 @@ def search_results(pear, text):
     return out
 
 
-# ---------------------------------------------------------------- requête
+# ----------------------------------------------------------------- query
 def query(q, settings):
+    """Parse Flow Launcher query and return actions."""
     pear = Pear(settings)
     q = (q or "").strip()
     results = []
 
     if q.lower() == "auth":
-        return [action("Autoriser Flow Launcher dans Pear Desktop",
-                       "Une pop-up s'ouvre dans Pear : cliquez sur « Autoriser »",
+        return [action("Allow Flow Launcher in Pear Desktop",
+                       "A popup opens in Pear: click 'Allow'",
                        "AUTH", "")]
 
     words0 = q.split(None, 1)
     if words0 and words0[0].lower() in ("search", "s", "find", "rechercher"):
         text = words0[1].strip() if len(words0) > 1 else ""
         if len(text) < 2:
-            return [{"Title": "Rechercher un morceau",
-                     "SubTitle": "Ex. : pear search daft punk around the world", "IcoPath": ICON}]
+            return [{"Title": "Search a song",
+                     "SubTitle": "Ex: pear search daft punk around the world", "IcoPath": ICON}]
         try:
             res = search_results(pear, text)
         except urllib.error.HTTPError:
-            return [action("Autorisation requise", "Entrée : demander l'accès à Pear Desktop", "AUTH", "")]
+            return [action("Authorization required", "Press Enter to request Pear Desktop access", "AUTH", "")]
         except Exception as e:  # noqa: BLE001
-            return [{"Title": "Recherche impossible", "SubTitle": str(e), "IcoPath": ICON}]
-        return res or [{"Title": "Aucun résultat pour « %s »" % text, "SubTitle": "", "IcoPath": ICON}]
+            return [{"Title": "Search failed", "SubTitle": str(e), "IcoPath": ICON}]
+        return res or [{"Title": "No results for '%s'" % text, "SubTitle": "", "IcoPath": ICON}]
 
     try:
         np = now_playing(pear)
     except urllib.error.HTTPError:
-        return [action("Autorisation requise", "Entrée : demander l'accès à Pear Desktop", "AUTH", "")]
+        return [action("Authorization required", "Press Enter to request Pear Desktop access", "AUTH", "")]
     except Exception:
         return [{
-            "Title": "Pear Desktop est injoignable",
-            "SubTitle": "Lancez Pear et activez Plugins > API Server (port %s)" % (settings or {}).get("port", "26538"),
+            "Title": "Pear Desktop is unreachable",
+            "SubTitle": "Start Pear and enable Plugins > API Server (port %s)" % (settings or {}).get("port", "26538"),
             "IcoPath": ICON,
         }]
     if np:
@@ -299,23 +315,22 @@ def query(q, settings):
     if words and words[0] in ("vol", "volume", "v"):
         if len(words) > 1 and words[1].isdigit():
             v = max(0, min(100, int(words[1])))
-            results.insert(0, action("Volume : %d %%" % v, "Régler le volume", "POST", "/api/v1/volume", {"volume": v}))
-        else:
-            try:
-                cur = pear.call("GET", "/api/v1/volume").get("state", "?")
-            except Exception:
-                cur = "?"
-            results.insert(0, {"Title": "Volume actuel : %s %%" % cur,
-                               "SubTitle": "Tapez « pear vol 40 » pour le changer", "IcoPath": ICON})
+            results.insert(0, action("Volume: {}%".format(v), "Set volume", "POST", "/api/v1/volume", {"volume": v}))
+        try:
+            cur = pear.call("GET", "/api/v1/volume").get("state", "?")
+        except Exception:
+            cur = "?"
+        results.insert(0, {"Title": "Current volume: {}%".format(cur),
+                           "SubTitle": "Type 'pear vol 40' to change it", "IcoPath": ICON})
         return results
 
     # pear seek 1:30
     if words and words[0] in ("seek", "goto"):
         t = parse_time(words[1]) if len(words) > 1 else None
         if t is not None:
-            results.insert(0, action("Aller à %s" % fmt_time(t), "Positionner la lecture", "POST", "/api/v1/seek-to", {"seconds": t}))
+            results.insert(0, action("Go to {}".format(fmt_time(t)), "Seek to position", "POST", "/api/v1/seek-to", {"seconds": t}))
         else:
-            results.insert(0, {"Title": "Seek", "SubTitle": "Ex. : pear seek 1:30", "IcoPath": ICON})
+            results.insert(0, {"Title": "Seek", "SubTitle": "Ex: pear seek 1:30", "IcoPath": ICON})
         return results
 
     for keys, title, sub, method, path, body in COMMANDS:
@@ -330,11 +345,11 @@ def run(method, path, body, settings):
     try:
         if method == "AUTH":
             pear.authenticate()
-            msg("Pear Desktop", "Autorisation accordée ✔")
+            msg("Pear Desktop", "Authorization granted ✓")
             return
         pear.call(method, path, json.loads(body) if body and body != "null" else None)
     except Exception as e:  # noqa: BLE001
-        msg("Pear Desktop", "Erreur : %s" % e)
+        msg("Pear Desktop", "Error: %s" % e)
 
 
 def play_now(video_id, settings):
@@ -350,9 +365,9 @@ def play_now(video_id, settings):
 def enqueue(video_id, position, settings):
     try:
         Pear(settings).call("POST", "/api/v1/queue", {"videoId": video_id, "insertPosition": position})
-        msg("Pear Desktop", "Ajouté à la file d'attente")
+        msg("Pear Desktop", "Added to queue")
     except Exception as e:  # noqa: BLE001
-        msg("Pear Desktop", "Erreur : %s" % e)
+        msg("Pear Desktop", "Error: %s" % e)
 
 
 def context_menu(data):
@@ -360,9 +375,9 @@ def context_menu(data):
         return []
     vid, title = data[0], data[1]
     return [
-        {"Title": "Lire ensuite", "SubTitle": title, "IcoPath": ICON,
+        {"Title": "Play later", "SubTitle": title, "IcoPath": ICON,
          "JsonRPCAction": {"method": "enqueue", "parameters": [vid, "INSERT_AFTER_CURRENT_VIDEO"]}},
-        {"Title": "Ajouter en fin de file", "SubTitle": title, "IcoPath": ICON,
+        {"Title": "Add to end of queue", "SubTitle": title, "IcoPath": ICON,
          "JsonRPCAction": {"method": "enqueue", "parameters": [vid, "INSERT_AT_END"]}},
     ]
 
